@@ -137,8 +137,10 @@ class WalkingSystem:
     def plot(self, engine='pyplot', iterations=None):
         """Plots the system using a specified render engine.
         Needs compute_3d_vectrices() to be called before.
-        - engine: String for the render engine. Can be 'visvis' or 'pyplot'.
-        visvis is faster, but pyplot is nicer.
+        - engine: String for the render engine. Can be 'pyplot', 'plotly' or 'visvis'.
+        pyplot is the nicest because it supports antialiasing on translucent objects.
+        plotly is a way faster alternative that uses your web browser's render engine.
+        visvis is faster but a bit rough.
         - iterations: Limits the plotting to this number of iterations.
         If None, the whole system states will be plotted."""
         engine = engine.lower()
@@ -169,6 +171,37 @@ class WalkingSystem:
             ax = fig.gca(projection='3d')
             ax.set_axis_off()
 
+        elif engine == 'plotly':
+            try:
+                import plotly as pl
+                from plotly.graph_objs import Scatter3d, Layout, Scene, Figure
+            except ImportError:
+                raise ImportError("plotly must be installed in order to use it."
+                "Try to 'pip install plotly' in a command line.")
+            data = []
+            layout = Layout(
+                scene = Scene(
+                    xaxis=dict(
+                        visible = False,
+                        autorange = True,
+                    ),
+                    yaxis=dict(
+                        visible = False,
+                        autorange = True,
+                    ),
+                    zaxis=dict(
+                        visible = False,
+                        autorange = True,
+                    )
+                ),
+                margin=dict(
+                    r=0, l=0,
+                    b=0, t=0
+                ),
+                showlegend = False,
+                hovermode = False
+            )
+
         else:
             raise ValueError("%s is not a supported render engine." % engine)
 
@@ -178,28 +211,54 @@ class WalkingSystem:
             color = self.cmap(i, 0, len(self.rings) / 2, 1)
             if engine == 'visvis':
                 vv.plot(*ring, lc=color, mw=0, alpha=.2)
-            else:
+            elif engine == 'pyplot':
                 ax.plot(*ring, c=color+(.4,)) # Adding alpha as (r, g, b, a)
+            else:
+                data.append(Scatter3d(
+                    x = ring[0],
+                    y = ring[1],
+                    z = ring[2],
+                    mode = 'lines',
+                    opacity = .3,
+                    line = dict(
+                        color = ("rgb(%s,%s,%s)" % tuple([int(x*255) for x in color])),
+                        width = 3)
+                ))
 
         curves = [curve[:iterations] for curve in self.curves]
         for curve in curves:
             if engine == 'visvis':
                 vv.plot(*curve, lc='k', mw=0, lw=2)
-            else:
+            elif engine == 'pyplot':
                 ax.plot(*curve, c=(0, 0, 0, .8))
+            else:
+                data.append(Scatter3d(
+                x = curve[0],
+                y = curve[1],
+                z = curve[2],
+                mode = 'lines',
+                line = dict(
+                    color = ("rgb(0, 0, 0)"),
+                    width = 4)
+                ))
 
         if engine == 'visvis':
             ax = vv.gca()
             app.Run()
-            return
 
-        else:
+        elif engine == 'pyplot':
             fig.tight_layout()
             # plt.draw()
             mng = plt.get_current_fig_manager()
             mng.full_screen_toggle()
             plt.show()
-            return
+
+        else:
+            fig = Figure(data=data, layout=layout)
+            # pl.plot(fig, filename='3d-scatter-with-axes-titles')
+            pl.offline.plot(fig)
+
+        return
 
     # def animation(self):
     #     path = "stuff{:04d}/".format(randint(0, 9999))
@@ -268,4 +327,5 @@ if __name__ == '__main__':
     sys.save("last-system.pkl")
     sys.compute_3d_vectrices()
     sys.plot()
+    # sys.plot('plotly')
     # sys.plot('visvis')

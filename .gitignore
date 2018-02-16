@@ -104,3 +104,4 @@ Thumbs.db
 # Generated stuff
 demo/
 *.pkl
+*.html

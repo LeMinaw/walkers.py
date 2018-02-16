@@ -12,5 +12,5 @@ As always, **ʢಠ╭∩╮ಠʡ**
 
 ## Dependancies
 
-- `matplotlib` for plotting
+- `matplotlib` or `plotly` for plotting
 - alternately, you can use `visvis` and a GUI backend such as `wxPython` or `PyQt4`
