@@ -5,6 +5,7 @@ import pickle
 from colormaps import ColorMap, black
 from utils     import lin_interp, is_sequence, clamp
 from math      import sqrt
+from copy      import copy
 
 class Walker():
     """Class representating a walker object."""
