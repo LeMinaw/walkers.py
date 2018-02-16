@@ -254,7 +254,7 @@ if __name__ == '__main__':
     cmap = ColorMap(col(), col())
     walkers = [Walker((crd(), crd(), crd())) for i in range(8)]
     rels = {wlkr: {rel_wlkr: rel() for rel_wlkr in walkers if rel_wlkr is not wlkr} for wlkr in walkers}
-    sys = WalkingSystem(rels, iterations=80, cmap=))
+    sys = WalkingSystem(rels, iterations=80, cmap=cmap)
 
     #----------------------------[THIRD] EXEMPLE]--------------------------------#
     #          Loading a previously saved WalkingSystem from file system         #
